@@ -1,8 +1,8 @@
 {
-	"translatorID":"dda092d2-a257-46af-b9a3-2f04a55cb04f",
+	"translatorID": "dda092d2-a257-46af-b9a3-2f04a55cb04f",
 	"translatorType":2,
 	"label":"Roam Metadata Export",
-	"creator":"Lukas Kawerau",
+	"creator":"",
 	"target":"md",
 	"minVersion":"2.0",
 	"maxVersion":"",

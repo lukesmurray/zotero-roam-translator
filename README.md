@@ -4,4 +4,12 @@ Based off code from [cortex futura](https://www.cortexfutura.com/zotero-and-roam
 
 ## Installation
 
-Copy the translator into `/Users/<username>/Zotero/tanslators`
+1. Copy the translator into `/Users/<username>/Zotero/tanslators`
+
+```
+rsync roam-export.js "/Users/${USER}/Zotero/translators"
+```
+
+2. Go to Zotero > Preferences > Export
+
+    Select Roam Metadata Export
