@@ -4,12 +4,17 @@ Based off code from [cortex futura](https://www.cortexfutura.com/zotero-and-roam
 
 ## Installation
 
-1. Copy the translator into `/Users/<username>/Zotero/tanslators`
+1. Copy the translator into `/Users/<username>/Zotero/tanslators` with `./import_to_zotero.sh`
 
-```
-rsync roam-export.js "/Users/${USER}/Zotero/translators"
-```
+## Installation
 
-2. Go to Zotero > Preferences > Export
+1. Install Zutilio and Better Bibtex for roam
+2. Zotero > Preferences > Export > Default Format
+   Set to `Better BibText Roam Cite Key Quick Copy`
+3. Zotero > Preferences > Advanced > Config Editor
+   Set `extensions.zutilio.quickCopy_alt1` to `export=0ccb789a-2237-41cf-a594-c122c798009e`
+4. Zotero > Tools > Zutilio Preferences > Shortcuts
+   Set your shortcut for quick copy items alt 1. I use `cmd + shift + d`
 
-    Select Roam Metadata Export
+Now highlight a zotero item. Press `cmd + shift + c` to copy it's bibtex key.
+Press `cmd + shfit + d` to copy it's metadata.
