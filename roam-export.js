@@ -92,12 +92,17 @@ function isValidDate(d) {
   return d instanceof Date && !isNaN(d);
 }
 
+function fromCamelToSentenceCase(val) {
+  result = val.replace(/([A-Z])/g, ' $1');
+  return result.charAt(0).toUpperCase() + result.slice(1);
+}
+
 function getItemCreators(item) {
   let creators = item.creators;
   let creatorTypesObj = {};
   let creatorTypesArray = [];
   for (let creator of creators) {
-    let creatorTypeString = creator.creatorType;
+    let creatorTypeString = fromCamelToSentenceCase(creator.creatorType)
     if (creatorTypesObj[creatorTypeString] === undefined)
       creatorTypesObj[creatorTypeString] = [];
     let thisCreatorString = "";
@@ -193,10 +198,7 @@ function getItemMetadata(item) {
 
   // not sure what tags look like
   let itemTags = item.tags;
-  // itemTags.push({ tag: "ZoteroImport" });
-  // metadataString += `\n  ${
-  //   "Tags:: " + itemTags.map((o) => `#[[${o.tag}]]`).join(", ")
-  // }`
+  itemTags.push({ tag: "ZoteroImport" });
   metadataString += "\n  Tags:: " + itemTags.map((o) => `#[[${o.tag}]]`).join(", ")
   return metadataString;
 }
