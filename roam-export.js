@@ -25,6 +25,7 @@ const typemap = {
   case: "Legal case",
   computerProgram: "Data",
   conferencePaper: "Conference paper",
+  document: "Document",
   email: "Letter",
   encyclopediaArticle: "Encyclopaedia article",
   film: "Film",
@@ -50,15 +51,14 @@ const typemap = {
   webpage: "Webpage",
 };
 
-function getCiteKey(item) {
-  if (item.citekey) return item.citekey;
-  if (item.citationKey) return item.citationKey;
+function getItemCiteKey(item) {
+  if (item.citekey) {
+    return item.citekey;
+  }
+  if (item.citationKey) {
+    return item.citationKey;
+  }
   return undefined;
-}
-
-function getItemTitle(item) {
-  let title = item.title;
-  return title;
 }
 
 function getItemType(item) {
@@ -81,7 +81,7 @@ function getItemDateProperty(item, property) {
   const dateValue = item[property];
   if (dateValue) {
     let date = new Date(dateValue);
-    if (isValidDate(Date)) {
+    if (isValidDate(date)) {
       return date;
     }
   }
@@ -93,7 +93,7 @@ function isValidDate(d) {
 }
 
 function fromCamelToSentenceCase(val) {
-  result = val.replace(/([A-Z])/g, ' $1');
+  result = val.replace(/([A-Z])/g, " $1");
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
@@ -102,7 +102,7 @@ function getItemCreators(item) {
   let creatorTypesObj = {};
   let creatorTypesArray = [];
   for (let creator of creators) {
-    let creatorTypeString = fromCamelToSentenceCase(creator.creatorType)
+    let creatorTypeString = fromCamelToSentenceCase(creator.creatorType);
     if (creatorTypesObj[creatorTypeString] === undefined)
       creatorTypesObj[creatorTypeString] = [];
     let thisCreatorString = "";
@@ -121,85 +121,100 @@ function getItemCreators(item) {
   return creatorTypesArray;
 }
 
+function getLocalLink(item) {
+  let library_id = item.libraryID ? item.libraryID : 0;
+  return `[Local library](zotero://select/items/${library_id}_${item.key})`;
+}
+
+function getRemoteLink(item) {
+  return `[Web Library](${item.uri})`;
+}
+
+function getItemYear(item) {
+  let itemDate = getItemDate(item);
+  if (itemDate) {
+    return `${itemDate.getFullYear()}`.padStart("0", 4);
+  }
+  return undefined;
+}
+
+function formatRoamDate(date) {
+  const month = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  let nth = function (d) {
+    if (d > 3 && d < 21) return "th";
+    switch (d % 10) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
+  };
+  let roamDate = `${month[date.getMonth()]} ${date.getDate()}${nth(
+    date.getDate()
+  )}, ${date.getFullYear()}`;
+  return roamDate;
+}
+
 function getItemMetadata(item) {
   let metadataString = `Metadata::`;
-  let itemType = getItemType(item);
 
-  let library_id = item.libraryID ? item.libraryID : 0;
-  let localURL = `[Local library](zotero://select/items/${library_id}_${item.key})`;
-  // doens't work cause zotero.users isn't defined
-  // let cloudURL = `[Web library](https://www.zotero.org/users/${Zotero.Users.getCurrentUserID()}/items/${library_id}_${
-  //   item.key
-  // })`;
-  let itemLinks = [localURL];
+  metadataString += `\n  Title:: ${item.title}`;
+
   let itemCreators = getItemCreators(item);
-  let bbtCiteKey = getCiteKey(item);
-  let itemTitle = getItemTitle(item);
-  let itemDate = getItemDate(item);
-  let itemDateAdded = getItemDateAdded(item);
-  let itemUrl = item.url;
-
   if (itemCreators.length > 0) {
     for (let creatorType of itemCreators) {
       metadataString += `\n  ${creatorType}`;
     }
   }
-  metadataString += `\n  Title:: ${itemTitle}`;
-  metadataString += `\n  Type:: [[${itemType}]]`;
 
-  if (itemDate) {
-    metadataString += `\n  Date:: ${itemDate.getFullYear()}`;
+  metadataString += `\n  Type:: [[${getItemType(item)}]]`;
+
+  if (getItemYear(item)) {
+    metadataString += `\n  Date:: ${getItemYear(item)}`;
   }
 
-  if (itemDateAdded) {
-    const month = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    let d = itemDateAdded;
-    let nth = function (d) {
-      if (d > 3 && d < 21) return "th";
-      switch (d % 10) {
-        case 1:
-          return "st";
-        case 2:
-          return "nd";
-        case 3:
-          return "rd";
-        default:
-          return "th";
-      }
-    };
-    let roamDateAdded = `${month[d.getMonth()]} ${d.getDate()}${nth(
-      d.getDate()
-    )}, ${d.getFullYear()}`;
+  if (getItemDateAdded(item)) {
+    let roamDateAdded = formatRoamDate(getItemDateAdded(item));
     metadataString += `\n  Date added:: [[${roamDateAdded}]]`;
   }
 
+  let bbtCiteKey = getItemCiteKey(item);
   if (bbtCiteKey) {
     metadataString += `\n  Citekey:: ${bbtCiteKey}`;
   }
 
+  let itemUrl = item.url;
   if (itemUrl) {
     metadataString += `\n  URL:: [${itemUrl}](${itemUrl})`;
   }
 
-  metadataString += `\n  Zotero links:: ${itemLinks.join(", ")}`;
+  metadataString += `\n  Zotero links:: ${[
+    getLocalLink(item),
+    getRemoteLink(item),
+  ].join(", ")}`;
 
   // not sure what tags look like
   let itemTags = item.tags;
   itemTags.push({ tag: "ZoteroImport" });
-  metadataString += "\n  Tags:: " + itemTags.map((o) => `#[[${o.tag}]]`).join(", ")
+  metadataString +=
+    "\n  Tags:: " + itemTags.map((o) => `#[[${o.tag}]]`).join(", ");
   return metadataString;
 }
 
